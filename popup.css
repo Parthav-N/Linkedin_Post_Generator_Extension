@@ -23,119 +23,11 @@
     padding: 12px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
   }
   
   .header h1 {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 8px;
-  }
-  
-  .tab-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 5px;
-  }
-  
-  .tab-button {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 15px;
-    font-size: 12px;
-    margin: 0 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .tab-button.active {
-    background: rgba(255, 255, 255, 0.4);
-    font-weight: 500;
-  }
-  
-  .tab-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-  
-  /* Admin panel styles */
-  .admin-container {
-    flex: 1;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  
-  .admin-container h2 {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 15px;
-  }
-  
-  .user-stats {
-    display: flex;
-    justify-content: space-between;
-    background-color: #f0f7ff;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    font-size: 13px;
-  }
-  
-  .user-stats p {
-    margin: 0;
-  }
-  
-  .refresh-container {
-    text-align: right;
-    margin-bottom: 10px;
-  }
-  
-  #refresh-users-button {
-    background-color: #f0f7ff;
-    color: #0077B5;
-    border: 1px solid #0077B5;
-    border-radius: 4px;
-    padding: 5px 10px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  
-  #refresh-users-button:hover {
-    background-color: #e0f0ff;
-  }
-  
-  .users-container {
-    flex: 1;
-    overflow-y: auto;
-    border: 1px solid #eaeaea;
-    border-radius: 4px;
-    padding: 10px;
-  }
-  
-  .user-item {
-    padding: 8px;
-    border-bottom: 1px solid #eaeaea;
-    font-size: 13px;
-  }
-  
-  .user-item:last-child {
-    border-bottom: none;
-  }
-  
-  .user-email {
-    font-weight: 500;
-  }
-  
-  .user-date {
-    font-size: 11px;
-    color: #666;
-    margin-top: 3px;
   }
   
   .chat-container {

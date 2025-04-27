@@ -9,46 +9,24 @@
   <div class="container">
     <div class="header">
       <h1>LinkedIn Post Generator</h1>
-      <div class="tab-container" id="tab-container">
-        <button class="tab-button active" data-tab="chat-tab">Generator</button>
-        <button class="tab-button" data-tab="admin-tab" id="admin-tab-button" style="display: none;">Admin</button>
-      </div>
     </div>
     
-    <div class="tab-content" id="chat-tab">
-      <div class="chat-container" id="chat-container">
-        <!-- Messages will be inserted here -->
-      </div>
-      
-      <div class="loading-indicator" id="loading-indicator">
-        <div class="spinner"></div>
-        <p>Generating post...</p>
-      </div>
-      
-      <div class="input-container">
-        <textarea id="user-input" placeholder="Share your context to generate a LinkedIn post..."></textarea>
-        <button id="send-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </button>
-      </div>
+    <div class="chat-container" id="chat-container">
+      <!-- Messages will be inserted here -->
     </div>
     
-    <div class="tab-content" id="admin-tab" style="display: none;">
-      <div class="admin-container">
-        <h2>Registered Users</h2>
-        <div class="user-stats">
-          <p>Total Users: <span id="total-users">Loading...</span></p>
-          <p>Active Last Week: <span id="active-users">Loading...</span></p>
-        </div>
-        <div class="refresh-container">
-          <button id="refresh-users-button">Refresh Data</button>
-        </div>
-        <div class="users-container" id="users-container">
-          <div class="users-loading">Loading user data...</div>
-          <!-- User list will be inserted here -->
-        </div>
-      </div>
+    <div class="loading-indicator" id="loading-indicator">
+      <div class="spinner"></div>
+      <p>Generating post...</p>
     </div>
+    
+    <div class="input-container">
+      <textarea id="user-input" placeholder="Share your context to generate a LinkedIn post..."></textarea>
+      <button id="send-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+  </div>
   
   <template id="user-message-template">
     <div class="message user-message">
