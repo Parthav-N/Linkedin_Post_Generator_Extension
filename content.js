@@ -1,82 +1,92 @@
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.action === 'insertText') {
-      const result = insertTextIntoLinkedIn(request.text);
-      sendResponse(result);
+  if (request.action === 'insertText') {
+    const result = insertTextIntoLinkedIn(request.text);
+    sendResponse(result);
+  }
+  return true; // Keep the message channel open for asynchronous response
+});
+
+// Function to insert text into LinkedIn post editor
+function insertTextIntoLinkedIn(text) {
+  try {
+    // Try to find the post editor using multiple possible selectors
+    let postEditor = null;
+    
+    // Updated selector array with various possible LinkedIn editor selectors
+    const possibleSelectors = [
+      // Feed post editor selectors
+      '[contenteditable="true"][data-placeholder="What do you want to talk about?"]',
+      '[contenteditable="true"][aria-placeholder="What do you want to talk about?"]',
+      // Post modal selectors
+      '[contenteditable="true"][aria-label="Text editor for creating content"]',
+      '[contenteditable="true"][aria-label="Post editor"]',
+      // Article editor
+      '[contenteditable="true"][aria-label="Editor for article content"]',
+      // Generic content editable in LinkedIn post area
+      'div[role="textbox"][contenteditable="true"]',
+      // Additional possible selectors
+      '[contenteditable="true"].ql-editor',
+      '.sharing-input__editor [contenteditable="true"]',
+      '.editor-container [contenteditable="true"]'
+    ];
+    
+    // Try each selector until we find an editor
+    for (const selector of possibleSelectors) {
+      const editors = document.querySelectorAll(selector);
+      if (editors.length > 0) {
+        postEditor = editors[0];
+        console.log('LinkedIn editor found with selector:', selector);
+        break;
+      }
     }
-    return true; // Keep the message channel open for asynchronous response
-  });
-  
-  // Function to insert text into LinkedIn post editor
-  function insertTextIntoLinkedIn(text) {
-    try {
-      // Try to find the post editor
-      let postEditor = null;
+    
+    // If editor is found, focus it and insert text
+    if (postEditor) {
+      // Focus the editor
+      postEditor.focus();
       
-      // First, check if we're on the feed page with the "Start a post" box
-      const feedPostEditors = document.querySelectorAll('[contenteditable="true"][data-placeholder="What do you want to talk about?"]');
-      if (feedPostEditors.length > 0) {
-        postEditor = feedPostEditors[0];
+      // Clear existing content first
+      postEditor.innerHTML = '';
+      
+      // Insert new content
+      // Method 1: Using innerHTML (preserves line breaks)
+      const formattedText = text.replace(/\n/g, '<br>');
+      postEditor.innerHTML = formattedText;
+      
+      // Method 2: Using execCommand as fallback
+      if (!postEditor.innerHTML || postEditor.innerHTML === '') {
+        document.execCommand('insertHTML', false, formattedText);
       }
       
-      // If not found, check for an open post creation modal
-      if (!postEditor) {
-        const modalPostEditors = document.querySelectorAll('[contenteditable="true"][aria-label="Text editor for creating content"]');
-        if (modalPostEditors.length > 0) {
-          postEditor = modalPostEditors[0];
-        }
+      // Method 3: Direct textContent as last resort
+      if (!postEditor.innerHTML || postEditor.innerHTML === '') {
+        postEditor.textContent = text;
       }
       
-      // If not found, check for article editor
-      if (!postEditor) {
-        const articleEditors = document.querySelectorAll('[contenteditable="true"][aria-label="Editor for article content"]');
-        if (articleEditors.length > 0) {
-          postEditor = articleEditors[0];
-        }
-      }
+      // Fire multiple events to ensure LinkedIn detects the change
+      ['input', 'change', 'blur', 'focus'].forEach(eventType => {
+        postEditor.dispatchEvent(new Event(eventType, {
+          bubbles: true,
+          cancelable: true
+        }));
+      });
       
-      // If editor is found, focus it and insert text
-      if (postEditor) {
-        // Focus the editor
-        postEditor.focus();
-        
-        // Try using the clipboard API first (modern approach)
-        const canUseClipboard = true; // Assume we can use it until we know we can't
-        
-        if (canUseClipboard) {
-          // This approach tries to keep formatting if any
-          // First clear existing content
-          postEditor.textContent = '';
-          
-          // Then insert new content
-          // For simple text insertion:
-          postEditor.textContent = text;
-          
-          // Fire input event to trigger LinkedIn's UI update
-          postEditor.dispatchEvent(new Event('input', {
-            bubbles: true,
-            cancelable: true
-          }));
-          
-          return { success: true };
-        } else {
-          // Fallback to execCommand approach (older)
-          document.execCommand('insertText', false, text);
-          return { success: true };
-        }
-      } else {
-        // If we couldn't find the editor, return failure
-        console.error('Could not find LinkedIn post editor');
-        return { 
-          success: false, 
-          error: 'LinkedIn post editor not found. Please open the post composer first.' 
-        };
-      }
-    } catch (error) {
-      console.error('Error inserting text into LinkedIn:', error);
+      console.log('Text successfully inserted into LinkedIn editor');
+      return { success: true };
+    } else {
+      // If we couldn't find the editor, return failure with helpful message
+      console.error('Could not find LinkedIn post editor');
       return { 
         success: false, 
-        error: error.message 
+        error: 'LinkedIn post editor not found. Please make sure you\'re on LinkedIn and have clicked to create a post before using this feature.' 
       };
     }
+  } catch (error) {
+    console.error('Error inserting text into LinkedIn:', error);
+    return { 
+      success: false, 
+      error: error.message || 'An unexpected error occurred while inserting text' 
+    };
   }
+}
