@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "LinkedIn Post Generator",
+  "name": "LinkedIn Assistant Pro",
   "version": "1.0",
-  "description": "Generate professional LinkedIn posts with AI",
+  "description": "Generate professional LinkedIn posts and auto-comments with AI",
   "permissions": [
     "activeTab",
     "clipboardWrite",
@@ -23,7 +23,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.linkedin.com/*"],
-      "js": ["content.js"]
+      "js": ["content.js", "autocomment.js"]
     }
   ],
   "icons": {

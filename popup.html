@@ -1,30 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LinkedIn Post Generator</title>
-  <link rel="stylesheet" href="popup.css">
+  <title>LinkedIn Assistant Pro</title>
+  <link rel="stylesheet" href="styles.css">
   <meta charset="UTF-8">
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>LinkedIn Post Generator</h1>
+      <h1>LinkedIn Assistant Pro</h1>
     </div>
     
-    <div class="chat-container" id="chat-container">
-      <!-- Messages will be inserted here -->
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="chat">Post Generator</div>
+      <div class="tab" data-tab="settings">Settings</div>
     </div>
     
-    <div class="loading-indicator" id="loading-indicator">
-      <div class="spinner"></div>
-      <p>Generating post...</p>
+    <!-- Chat Tab -->
+    <div class="tab-content active" id="chat-tab">
+      <div class="chat-container" id="chat-container">
+        <!-- Messages will be inserted here -->
+      </div>
+      
+      <div class="loading-indicator" id="loading-indicator">
+        <div class="spinner"></div>
+        <p>Generating post...</p>
+      </div>
+      
+      <div class="input-container">
+        <textarea id="user-input" placeholder="Share your context to generate a LinkedIn post..."></textarea>
+        <button id="send-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
     </div>
     
-    <div class="input-container">
-      <textarea id="user-input" placeholder="Share your context to generate a LinkedIn post..."></textarea>
-      <button id="send-button">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-      </button>
+    <!-- Settings Tab -->
+    <div class="tab-content" id="settings-tab">
+      <div style="padding: 16px;">
+        <div class="setting-item">
+          <label>
+            <input type="checkbox" id="enableAutoComments" checked>
+            Enable Auto-Comments
+          </label>
+          <div class="description">
+            Automatically generate comments when you open LinkedIn comment boxes
+          </div>
+        </div>
+        
+        <div class="setting-item">
+          <div>Backend API Status:</div>
+          <div id="api-status">Checking...</div>
+        </div>
+        
+        <button id="save-settings">Save Settings</button>
+      </div>
     </div>
   </div>
   

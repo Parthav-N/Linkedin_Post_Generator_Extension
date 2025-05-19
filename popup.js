@@ -4,6 +4,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const sendButton = document.getElementById('send-button');
   const chatContainer = document.getElementById('chat-container');
   const loadingIndicator = document.getElementById('loading-indicator');
+  const autoCommentsCheckbox = document.getElementById('enableAutoComments');
+  const saveSettingsButton = document.getElementById('save-settings');
+  const apiStatusElement = document.getElementById('api-status');
+  const tabs = document.querySelectorAll('.tab');
+  const tabContents = document.querySelectorAll('.tab-content');
   
   // Templates
   const userMessageTemplate = document.getElementById('user-message-template');
@@ -16,6 +21,15 @@ document.addEventListener('DOMContentLoaded', function() {
   // Chat history
   let chatHistory = [];
   
+  // Base API URLs
+  const baseUrls = [
+    'https://linkedin-post-generator-backend.onrender.com',
+    'http://linkedin-post-generator-backend.onrender.com'
+  ];
+  
+  // Check API Status
+  checkAPIStatus();
+  
   // Event Listeners
   sendButton.addEventListener('click', sendMessage);
   userInput.addEventListener('keypress', function(e) {
@@ -24,6 +38,20 @@ document.addEventListener('DOMContentLoaded', function() {
       sendMessage();
     }
   });
+  
+  // Tab switching
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.getAttribute('data-tab');
+      activateTab(tabName);
+    });
+  });
+  
+  // Save settings button
+  saveSettingsButton.addEventListener('click', saveSettings);
+  
+  // Load settings
+  loadSettings();
   
   // Initialize by loading chat history
   loadChatHistory();
@@ -233,6 +261,100 @@ document.addEventListener('DOMContentLoaded', function() {
     saveChatHistory();
   }
   
+  // Tab Functions
+  function activateTab(tabName) {
+    // Update tab buttons
+    tabs.forEach(tab => {
+      if (tab.getAttribute('data-tab') === tabName) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+    
+    // Update tab content
+    tabContents.forEach(content => {
+      if (content.id === `${tabName}-tab`) {
+        content.classList.add('active');
+      } else {
+        content.classList.remove('active');
+      }
+    });
+  }
+  
+  // Settings Functions
+  function loadSettings() {
+    chrome.storage.sync.get(['enableAutoComments'], function(result) {
+      console.log('Loading settings:', result);
+      // Default to enabled if setting doesn't exist
+      autoCommentsCheckbox.checked = result.enableAutoComments !== false;
+    });
+  }
+  
+  function saveSettings() {
+    // Save the settings with explicit boolean values
+    const settings = {
+      'enableAutoComments': Boolean(autoCommentsCheckbox.checked)
+    };
+    
+    console.log('Saving settings:', settings);
+    
+    chrome.storage.sync.set(settings, function() {
+      // Debug: Verify what we just saved
+      chrome.storage.sync.get(['enableAutoComments'], function(result) {
+        console.log('Verified saved settings:', result);
+      });
+      
+      saveSettingsButton.textContent = 'Saved!';
+      
+      // Notify all tabs about the settings change
+      chrome.tabs.query({url: "https://www.linkedin.com/*"}, function(tabs) {
+        console.log('Found LinkedIn tabs to notify:', tabs.length);
+        tabs.forEach(tab => {
+          try {
+            chrome.tabs.sendMessage(tab.id, {
+              action: 'settingsChanged',
+              settings: settings
+            }, function(response) {
+              console.log('Tab notification response:', response);
+            });
+          } catch (error) {
+            console.error('Error sending message to tab:', error);
+          }
+        });
+      });
+      
+      setTimeout(() => {
+        saveSettingsButton.textContent = 'Save Settings';
+      }, 1500);
+    });
+  }
+  
+  // API Status Check
+  async function checkAPIStatus() {
+    apiStatusElement.textContent = 'Checking...';
+    
+    for (const baseUrl of baseUrls) {
+      try {
+        const response = await fetch(`${baseUrl}/health`, {
+          method: 'GET'
+        });
+        
+        if (response.ok) {
+          apiStatusElement.textContent = '✅ Connected';
+          apiStatusElement.style.color = 'green';
+          return;
+        }
+      } catch (error) {
+        console.error(`Error with ${baseUrl}:`, error);
+        // Continue to next URL
+      }
+    }
+    
+    apiStatusElement.textContent = '❌ Disconnected';
+    apiStatusElement.style.color = 'red';
+  }
+  
   // Persistence Functions
   function saveChatHistory() {
     // Save chat history to session storage (cleared when browser closes)
@@ -294,18 +416,16 @@ document.addEventListener('DOMContentLoaded', function() {
         chatContainer.scrollTop = chatContainer.scrollHeight;
       } else {
         // No history - add a welcome message
-        addBotMessage('Hello! I can help you generate engaging LinkedIn posts. Share some context about what you want to post about.');
+        addBotMessage('Welcome to LinkedIn Assistant Pro! I can help you with:' + 
+                     '\n\n1. Generating engaging LinkedIn posts - just type what you want to post about' + 
+                     '\n2. Auto-generating comments on LinkedIn posts (enabled by default)' +
+                     '\n\nTo configure settings, use the Settings tab above.');
       }
     });
   }
   
   // Network Functions
   async function makeNetworkRequest(endpoint, requestBody) {
-    const baseUrls = [
-      'https://linkedin-post-generator-backend.onrender.com',
-      'http://linkedin-post-generator-backend.onrender.com'
-    ];
-    
     for (const baseUrl of baseUrls) {
       try {
         const response = await fetch(`${baseUrl}/${endpoint}`, {
@@ -320,7 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const data = await response.json();
           return {
             success: true,
-            post: data.post
+            post: data.post || data.comment
           };
         }
       } catch (error) {
@@ -335,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
   }
   
-  // Add a clear history button (optional)
+  // Add a clear history button
   function addClearHistoryButton() {
     const headerDiv = document.querySelector('.header');
     const clearButton = document.createElement('button');
@@ -356,7 +476,10 @@ document.addEventListener('DOMContentLoaded', function() {
       currentGeneratedPost = null;
       chrome.storage.session.remove(['chatHistory', 'currentGeneratedPost']);
       chatContainer.innerHTML = '';
-      addBotMessage('Hello! I can help you generate engaging LinkedIn posts. Share some context about what you want to post about.');
+      addBotMessage('Welcome to LinkedIn Assistant Pro! I can help you with:' + 
+                   '\n\n1. Generating engaging LinkedIn posts - just type what you want to post about' + 
+                   '\n2. Auto-generating comments on LinkedIn posts (enabled by default)' +
+                   '\n\nTo configure settings, use the Settings tab above.');
     });
     
     headerDiv.appendChild(clearButton);
